@@ -22,7 +22,7 @@ const hoursE1 = document.getElementById("hours");
 const minsE1 = document.getElementById("mins");
 const secondsE1 = document.getElementById("seconds");
 
-const newYears ="10 oct 2022";
+const newYears ="10 oct 2023";
 
 function countdown() {
   const newYearsDate = new Date(newYears);
