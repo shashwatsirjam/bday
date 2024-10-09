@@ -20,15 +20,18 @@ const hoursE1 = document.getElementById("hours");
 const minsE1 = document.getElementById("mins");
 const secondsE1 = document.getElementById("seconds");
 
-// Set the target date to the next year
-const currentYear = new Date().getFullYear();
-const nextYear = currentYear + 1;
-const newYears = `10 oct ${nextYear}`;
+// Get the current date
+const currentDate = new Date();
+const currentYear = currentDate.getFullYear();
+const targetDate = new Date(currentYear, 9, 10); // October 10 is the 10th month (0-indexed)
+
+// Set the target date to the next year if today is after October 10
+if (currentDate > targetDate) {
+  targetDate.setFullYear(currentYear + 1);
+}
 
 function countdown() {
-  const newYearsDate = new Date(newYears);
-  const currentDate = new Date();
-  const totalSeconds = (newYearsDate - currentDate) / 1000;
+  const totalSeconds = (targetDate - currentDate) / 1000;
 
   const days = Math.floor(totalSeconds / 3600 / 24);
   const hours = Math.floor((totalSeconds / 3600) % 24);
@@ -45,5 +48,6 @@ function formatTime(time) {
   return time < 10 ? `0${time}` : time;
 }
 
+// Start the countdown
 countdown();
 setInterval(countdown, 1000);
