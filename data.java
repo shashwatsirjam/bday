@@ -1,16 +1,70 @@
-# Service Configuration
-service.name=FSDTService
-service.display-name=FSDT Application Service
-service.description=Windows Service for FSDT Application
-service.app-path=C:\\user\\shaswat
-service.jar-name=FSDT.jar
-service.java-opts=-Xmx512m -Dlog4j.configurationFile=config/log4j2.xml -Djavax.net.ssl.trustStore=cert/176-solace.jks
+@echo off
+echo Installing FSDT Service...
+echo.
 
-# Logging Configuration
-logging.file.name=${service.app-path}/logs/service-wrapper.log
-logging.level.root=INFO
-logging.level.com.fsdt=DEBUG
+REM Check for administrative privileges
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Error: Administrative privileges required.
+    echo Please run this script as Administrator.
+    pause
+    exit /b 1
+)
 
-# Spring Configuration
-spring.main.banner-mode=console
-spring.main.log-startup-info=true
+REM Set working directory
+cd /d C:\user\shaswat
+
+REM Verify Java installation
+java -version >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Error: Java is not installed or not in PATH.
+    pause
+    exit /b 1
+)
+
+REM Create required directories if they don't exist
+if not exist "config" mkdir config
+if not exist "cert" mkdir cert
+if not exist "logs" mkdir logs
+
+REM Install the service
+java -jar fsdt-service-wrapper.jar install
+
+echo.
+echo Installation completed.
+echo You can now start the service from Windows Services or by running: sc start FSDTService
+pause
+
+
+
+
+
+
+
+
+
+
+
+
+  @echo off
+echo Uninstalling FSDT Service...
+echo.
+
+REM Check for administrative privileges
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Error: Administrative privileges required.
+    echo Please run this script as Administrator.
+    pause
+    exit /b 1
+)
+
+REM Set working directory
+cd /d C:\user\shaswat
+
+REM Uninstall the service
+java -jar fsdt-service-wrapper.jar uninstall
+
+echo.
+echo Uninstallation completed.
+pause
