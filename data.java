@@ -164,13 +164,43 @@ public class WindowsServiceWrapper {
         }
     }
 
-    private static void runApplication() {
-        // Set system properties for log4j and SSL
-        System.setProperty("log4j.configurationFile", "config/log4j2.xml");
-        System.setProperty("javax.net.ssl.trustStore", "cert/176-solace.jks");
+private void runApplication() {
+    try {
+        // Build command to run your jar
+        ProcessBuilder processBuilder = new ProcessBuilder(
+            "java",
+            "-Xmx512m",
+            "-Dlog4j.configurationFile=config/log4j2.xml",
+            "-Djavax.net.ssl.trustStore=cert/176-solace.jks",
+            "-jar",
+            APP_PATH + "/" + "FSDT.jar",
+            "--spring.config.location=" + APP_PATH + "/application.properties"
+        );
         
-        // Start your Spring Boot application
-        System.setProperty("spring.config.location", APP_PATH + "/application.properties");
-        SpringApplication.run(YourMainApplication.class);
+        // Set working directory
+        processBuilder.directory(new File(APP_PATH));
+        
+        // Redirect error and output to files
+        processBuilder.redirectError(new File(APP_PATH + "/logs/error.log"));
+        processBuilder.redirectOutput(new File(APP_PATH + "/logs/output.log"));
+        
+        // Start the process
+        Process process = processBuilder.start();
+        
+        // Add shutdown hook to stop the process when service stops
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (process.isAlive()) {
+                process.destroy();
+            }
+        }));
+        
+        // Wait for the process
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new RuntimeException("Application exited with code: " + exitCode);
+        }
+    } catch (Exception e) {
+        throw new RuntimeException("Failed to start application", e);
     }
+}
 }
