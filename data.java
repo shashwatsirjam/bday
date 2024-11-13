@@ -1,70 +1,39 @@
-@echo off
-echo Installing FSDT Service...
-echo.
+Create a Windows Service Wrapper:
 
-REM Check for administrative privileges
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo Error: Administrative privileges required.
-    echo Please run this script as Administrator.
-    pause
-    exit /b 1
-)
+Download the Java Service Wrapper (also known as "prunsrv") from the official website: https://wrapper.tanukisoftware.com/doc/english/download.jsp
+Extract the downloaded ZIP file to a directory of your choice.
 
-REM Set working directory
-cd /d C:\user\shaswat
 
-REM Verify Java installation
-java -version >nul 2>&1
-if %errorLevel% neq 0 (
-    echo Error: Java is not installed or not in PATH.
-    pause
-    exit /b 1
-)
+Configure the Service Wrapper:
 
-REM Create required directories if they don't exist
-if not exist "config" mkdir config
-if not exist "cert" mkdir cert
-if not exist "logs" mkdir logs
+Open the conf/wrapper.conf file in the extracted directory.
+Modify the following properties to match your SpringBoot application:
 
-REM Install the service
-java -jar fsdt-service-wrapper.jar install
-
-echo.
-echo Installation completed.
-echo You can now start the service from Windows Services or by running: sc start FSDTService
-pause
+wrapper.app.path: Specify the path to your SpringBoot application JAR file.
+wrapper.java.command: Specify the path to your Java executable (e.g., %JAVA_HOME%\bin\java.exe).
+wrapper.java.mainclass: Set this to org.springframework.boot.loader.JarLauncher.
+wrapper.console.loglevel: Set the log level for the service (e.g., INFO).
 
 
 
 
+Install the Windows Service:
+
+Open an administrative command prompt or PowerShell window.
+Navigate to the extracted Java Service Wrapper directory.
+Run the following command to install the service:
+Copybin\prunsrv.exe //IS//MySpringBootService
+Replace MySpringBootService with a name that identifies your service.
+
+
+Start the Windows Service:
+
+In the same command prompt or PowerShell window, run the following command to start the service:
+Copybin\prunsrv.exe //ES//MySpringBootService
 
 
 
+Verify the Service:
 
-
-
-
-
-  @echo off
-echo Uninstalling FSDT Service...
-echo.
-
-REM Check for administrative privileges
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo Error: Administrative privileges required.
-    echo Please run this script as Administrator.
-    pause
-    exit /b 1
-)
-
-REM Set working directory
-cd /d C:\user\shaswat
-
-REM Uninstall the service
-java -jar fsdt-service-wrapper.jar uninstall
-
-echo.
-echo Uninstallation completed.
-pause
+Open the Windows Services management console (search for "Services" in the Start menu).
+You should see your "MySpringBootService" listed and running.
