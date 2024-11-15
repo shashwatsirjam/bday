@@ -1,25 +1,32 @@
-# Define Paths
-$sourcePath = "C:\source\path"          # Path where start.bat and stop.bat are located
-$targetPath = "C:\uat\path"              # UAT path where you want to deploy the .bat files
+@echo off
+REM Set the path to Java installation
+set JAVA_HOME=I:\DMDT\Newfolder\JRE_17\java-17-openjdk-17.0.8.0.7-1-jre-win.x86_64
+set PATH=%JAVA_HOME%\bin;%PATH%
 
-# List of .bat files to deploy
-$batFilesToDeploy = @("start.bat", "stop.bat")
+REM Set the path to configuration files
+set CONFIG_PATH=I:\DMDT\application.properties
+set LOG_PATH=I:\DMDT\config\log4j2-rfasfsat.xml
 
-# Ensure the target directory exists
-if (!(Test-Path -Path $targetPath)) {
-    New-Item -ItemType Directory -Path $targetPath -Force
-}
+REM Optional: Set custom options for logging if needed
+set LOG_OPTS=-Dlogging.file.path=%LOG_PATH%
 
-# Copy .bat files to UAT
-foreach ($batFile in $batFilesToDeploy) {
-    $sourceFile = Join-Path -Path $sourcePath -ChildPath $batFile
-    $targetFile = Join-Path -Path $targetPath -ChildPath $batFile
-    Copy-Item -Path $sourceFile -Destination $targetFile -Force
-    Write-Output "$batFile deployed to UAT."
-}
+REM Automatically find the latest JAR file based on pattern "funds-data-extractor"
+for /f "delims=" %%a in ('dir /b /o:-d I:\DMDT\funds-data-extractor-*.jar') do (
+    set JAR_PATH=I:\DMDT\%%a
+    goto :found
+)
 
-# Start the start.bat file
-$startBatPath = Join-Path -Path $targetPath -ChildPath "start.bat"
-Start-Process -FilePath $startBatPath
+:found
+REM Set Java options for Spring Boot application
+set JAVA_OPTS=-Dspring.config.location=file:%CONFIG_PATH%
 
-Write-Output "start.bat has been executed to start the application."
+REM Start the application
+echo Starting Spring Boot application...
+%JAVA_HOME%\bin\java %JAVA_OPTS% %LOG_OPTS% -jar %JAR_PATH%
+
+REM Check if the application started successfully
+if %ERRORLEVEL% equ 0 (
+    echo Application started successfully.
+) else (
+    echo Failed to start application.
+)
